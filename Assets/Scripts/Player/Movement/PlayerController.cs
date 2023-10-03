@@ -13,10 +13,13 @@ namespace Player.Movement
         [SerializeField] private float minPitch = -40f;
         [SerializeField] private float maxPitch = 85f;
         [SerializeField] private float currentPitch = 0f;
-
+        [SerializeField] private float gravity = -9.81f;
+        
         private CharacterController characterController;
         private Vector2 currentLookDelta;
         private PlayerControls controls; // Reference to our custom input controls
+        private Vector3 velocity; // To store vertical velocity for gravity
+
 
 
         private void Awake()
@@ -51,7 +54,21 @@ namespace Player.Movement
         {
             // Move the player forward automatically
             var moveDirection = transform.forward * moveSpeed;
-            characterController.SimpleMove(moveDirection);
+            // Apply gravity
+            if (characterController.isGrounded && velocity.y < 0)
+            {
+                velocity.y = -2f; // Small value to ensure the player stays grounded
+            }
+            else
+            {
+                velocity.y += gravity * Time.deltaTime;
+            }
+            
+            // Combine horizontal and vertical movement
+            var combinedMove = moveDirection + velocity;
+
+            // Move the player using the CharacterController
+            characterController.Move(combinedMove * Time.deltaTime);
         }
         
         private void HandleLook()
@@ -61,9 +78,6 @@ namespace Player.Movement
 
             currentPitch -= currentLookDelta.y * lookSpeed;
             currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
-
-            // Adjust the pitch of the camera based on mouse input
-            // virtualCamera.transform.Rotate(Vector3.left * (currentLookDelta.y * lookSpeed));
             
             // Set the pitch of the Cinemachine camera
             virtualCamera.transform.localEulerAngles = new Vector3(currentPitch, 0f, 0f);
