@@ -7,6 +7,8 @@ namespace Player.Movement
 {
     public class PlayerController : MonoBehaviour
     {
+        public static PlayerController instance;
+        
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float lookSpeed = 2f;
         [SerializeField] private CinemachineVirtualCamera virtualCamera;
@@ -24,6 +26,16 @@ namespace Player.Movement
 
         private void Awake()
         {
+            if (instance == null)
+            {
+                instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+                return;
+            }
+            
             characterController = GetComponent<CharacterController>();
             
             // Initialize the controls
