@@ -6,10 +6,16 @@ using UnityEngine.SceneManagement;
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private GameObject winPanel;
 
     public void ShowGameOverScreen()
     {
         gameOverPanel.SetActive(true);
+    }
+    
+    public void ShowWinScreen()
+    {
+        winPanel.SetActive(true);
     }
 
     public void RestartGame()

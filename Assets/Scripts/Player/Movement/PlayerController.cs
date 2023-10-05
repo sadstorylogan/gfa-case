@@ -22,6 +22,11 @@ namespace Player.Movement
         private Vector2 currentLookDelta;
         private PlayerControls controls; // Reference to our custom input controls
         private Vector3 velocity; // To store vertical velocity for gravity
+        
+        public float jumpHeight = 2.0f; // The height of the jump
+        private bool isJumping = false; // To check if the player is currently jumping
+        private float verticalSpeed = 0; // To store the vertical component of our movement
+        
         private UIManager uiManager;
 
 
@@ -46,6 +51,8 @@ namespace Player.Movement
             // Bind the look event
             controls.Player.Look.performed += ctx => currentLookDelta = ctx.ReadValue<Vector2>();
             controls.Player.Look.canceled += ctx => currentLookDelta = Vector2.zero;
+            controls.Player.Jump.performed += ctx => OnJump(); 
+            controls.Player.Jump.canceled += ctx => isJumping = false;
         }
 
         private void OnEnable()
@@ -67,6 +74,33 @@ namespace Player.Movement
         {
             HandleMovement();
             HandleLook();
+            HandleJump();
+        }
+
+        private void HandleJump()
+        {
+            if (characterController.isGrounded && isJumping)
+            {
+                verticalSpeed = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                isJumping = false; // Reset the jump flag
+            }
+
+            // Apply gravity
+            verticalSpeed += gravity * Time.deltaTime;
+
+            // Create a vector3 for vertical movement
+            var verticalMove = new Vector3(0, verticalSpeed, 0) * Time.deltaTime;
+
+            // Apply vertical movement
+            characterController.Move(verticalMove);
+        }
+        
+        public void OnJump()
+        {
+            if (characterController.isGrounded)
+            {
+                isJumping = true;
+            }
         }
 
         private void HandleMovement()
@@ -113,6 +147,23 @@ namespace Player.Movement
             if (hit.gameObject.CompareTag("Enemy") || hit.gameObject.CompareTag("DeadlyObject"))
             {
                 Die();
+            }
+            else if (hit.gameObject.CompareTag("Coin"))
+            {
+                Win();
+                Destroy(hit.gameObject); // Remove the coin from the scene
+            }
+        }
+
+        private void Win()
+        {
+            // Disable player movement and other functionalities
+            this.enabled = false;
+
+            // Show the win screen
+            if (uiManager != null)
+            {
+                uiManager.ShowWinScreen();
             }
         }
 
