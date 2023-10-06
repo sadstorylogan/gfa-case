@@ -4,9 +4,12 @@ using UnityEngine;
 
 public class CollectibleBehavior : MonoBehaviour
 {
-    [SerializeField] private float rotationSpeed = 50f; // Speed of rotation (degrees per second)
-    [SerializeField] private float bounceHeight = 0.5f; // Maximum height of the bounce
-    [SerializeField] private float bounceSpeed = 2f;    // Speed of the bounce
+    // Speed of rotation (degrees per second)
+    [SerializeField] private float rotationSpeed = 50f; 
+    // Maximum height of the bounce
+    [SerializeField] private float bounceHeight = 0.5f;
+    // Speed of the bounce
+    [SerializeField] private float bounceSpeed = 2f;   
 
     private Vector3 startPosition;
 

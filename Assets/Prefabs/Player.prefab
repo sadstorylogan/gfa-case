@@ -520,6 +520,10 @@ MonoBehaviour:
   maxPitch: 50
   currentPitch: 0
   gravity: -9.81
+  slideDuration: 2
+  slideHeight: 1
+  jumpHeight: 6
+  slideTransitionSpeed: 0.01
 --- !u!95 &597001152132248616
 Animator:
   serializedVersion: 5

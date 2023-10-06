@@ -17,19 +17,37 @@ namespace Player.Movement
         [SerializeField] private float maxPitch = 85f;
         [SerializeField] private float currentPitch = 0f;
         [SerializeField] private float gravity = -9.81f;
+        // Duration of the slide
+        [SerializeField] private float slideDuration = 1f; 
+        // Height of the character during the slide
+        [SerializeField] private float slideHeight = 0.5f; 
+
+        // To check if the player is currently sliding
+        private bool isSliding = false;
+        // To store the original height of the character
+        private float originalHeight; 
+        // To track the duration of the slide
+        private float slideTimer = 0f; 
+
 
         private CharacterController characterController;
         private Vector2 currentLookDelta;
-        private PlayerControls controls; // Reference to our custom input controls
-        private Vector3 velocity; // To store vertical velocity for gravity
+        // Reference to our custom input controls
+        private PlayerControls controls; 
+        // To store vertical velocity for gravity
+        private Vector3 velocity;
         
-        public float jumpHeight = 2.0f; // The height of the jump
-        private bool isJumping = false; // To check if the player is currently jumping
-        private float verticalSpeed = 0; // To store the vertical component of our movement
+        // The height of the jump
+        public float jumpHeight = 2.0f;
+        // To check if the player is currently jumping
+        private bool isJumping = false; 
+        // To store the vertical component of our movement
+        private float verticalSpeed = 0; 
+        // Speed of transitioning from standing to sliding and vice versa
+        public float slideTransitionSpeed = 5f; 
         
         private UIManager uiManager;
-
-
+        private Animator animator;
 
         private void Awake()
         {
@@ -44,6 +62,7 @@ namespace Player.Movement
             }
 
             characterController = GetComponent<CharacterController>();
+            animator = GetComponent<Animator>();
 
             // Initialize the controls
             controls = new PlayerControls();
@@ -53,8 +72,30 @@ namespace Player.Movement
             controls.Player.Look.canceled += ctx => currentLookDelta = Vector2.zero;
             controls.Player.Jump.performed += ctx => OnJump(); 
             controls.Player.Jump.canceled += ctx => isJumping = false;
+            controls.Player.Slide.performed += ctx => StartSlide();
+            controls.Player.Slide.canceled += ctx => StopSlide();
+        }
+        
+        private void StartSlide()
+        {
+            if (!isSliding && characterController.isGrounded)
+            {
+                isSliding = true;
+                originalHeight = characterController.height;
+                characterController.height = slideHeight;
+                slideTimer = 0f; // Reset the slide timer
+            }
         }
 
+        private void StopSlide()
+        {
+            if (isSliding)
+            {
+                isSliding = false;
+                characterController.height = originalHeight;
+            }
+        }
+        
         private void OnEnable()
         {
             controls.Enable();
@@ -75,6 +116,19 @@ namespace Player.Movement
             HandleMovement();
             HandleLook();
             HandleJump();
+            HandleSlide();
+        }
+        
+        private void HandleSlide()
+        {
+            if (isSliding)
+            {
+                slideTimer += Time.deltaTime;
+                if (slideTimer >= slideDuration)
+                {
+                    StopSlide();
+                }
+            }
         }
 
         private void HandleJump()
@@ -82,7 +136,8 @@ namespace Player.Movement
             if (characterController.isGrounded && isJumping)
             {
                 verticalSpeed = Mathf.Sqrt(jumpHeight * -2f * gravity);
-                isJumping = false; // Reset the jump flag
+                // Reset the jump 
+                isJumping = false; 
             }
 
             // Apply gravity
@@ -151,7 +206,8 @@ namespace Player.Movement
             else if (hit.gameObject.CompareTag("Coin"))
             {
                 Win();
-                Destroy(hit.gameObject); // Remove the coin from the scene
+                // Remove the object from the scene
+                Destroy(hit.gameObject); 
             }
         }
 
